@@ -4,6 +4,7 @@ import com.tecsup.petclinic.dtos.VisitDTO;
 import com.tecsup.petclinic.entities.Visit;
 import com.tecsup.petclinic.exceptions.VisitNotFoundException;
 import com.tecsup.petclinic.mapper.VisitMapper;
+import com.tecsup.petclinic.repositories.PetRepository;
 import com.tecsup.petclinic.repositories.VisitRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,11 +24,55 @@ import java.util.Optional;
 public class VisitServiceImpl implements VisitService {
 
     VisitRepository visitRepository;
+    PetRepository petRepository;
     VisitMapper visitMapper;
 
-    public VisitServiceImpl(VisitRepository visitRepository, VisitMapper visitMapper) {
+    public VisitServiceImpl(VisitRepository visitRepository, PetRepository petRepository, VisitMapper visitMapper) {
         this.visitRepository = visitRepository;
+        this.petRepository = petRepository;
         this.visitMapper = visitMapper;
+    }
+
+    /**
+     *
+     * @param visitDTO
+     * @return
+     */
+    @Override
+    @Transactional
+    public VisitDTO create(VisitDTO visitDTO) {
+
+        Visit newVisit = visitRepository.save(toEntity(visitDTO));
+
+        return visitMapper.mapToDto(newVisit);
+    }
+
+    /**
+     *
+     * @param visitDTO
+     * @return
+     */
+    @Override
+    @Transactional
+    public VisitDTO update(VisitDTO visitDTO) {
+
+        Visit updVisit = visitRepository.save(toEntity(visitDTO));
+
+        return visitMapper.mapToDto(updVisit);
+    }
+
+    /**
+     *
+     * @param id
+     * @throws VisitNotFoundException
+     */
+    @Override
+    @Transactional
+    public void delete(Long id) throws VisitNotFoundException {
+
+        findById(id);
+
+        visitRepository.deleteById(id);
     }
 
     /**
@@ -57,5 +102,21 @@ public class VisitServiceImpl implements VisitService {
         List<Visit> visits = visitRepository.findAll();
 
         return this.visitMapper.mapToDtoList(visits);
+    }
+
+    /**
+     * Map DTO to entity and resolve the pet relation from petId
+     *
+     * @param visitDTO
+     * @return
+     */
+    private Visit toEntity(VisitDTO visitDTO) {
+
+        Visit visit = visitMapper.mapToEntity(visitDTO);
+
+        if (visitDTO.getPetId() != null)
+            visit.setPet(petRepository.getReferenceById(visitDTO.getPetId()));
+
+        return visit;
     }
 }

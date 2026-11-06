@@ -19,6 +19,13 @@ public interface VisitMapper {
 
 	VisitMapper INSTANCE = Mappers.getMapper(VisitMapper.class);
 
+	/**
+	 * The pet relation is resolved in the service from petId
+	 */
+	@Mapping(source = "visitDate", target = "visitDate", dateFormat = "yyyy-MM-dd")
+	@Mapping(target = "pet", ignore = true)
+	Visit mapToEntity(VisitDTO visitTO);
+
 	@Mapping(source = "visitDate", target = "visitDate", dateFormat = "yyyy-MM-dd")
 	@Mapping(source = "pet.id", target = "petId")
 	VisitDTO mapToDto(Visit visit);

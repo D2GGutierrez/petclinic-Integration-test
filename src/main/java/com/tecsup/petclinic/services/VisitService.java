@@ -14,6 +14,27 @@ public interface VisitService {
 
     /**
      *
+     * @param visitDTO
+     * @return
+     */
+    VisitDTO create(VisitDTO visitDTO);
+
+    /**
+     *
+     * @param visitDTO
+     * @return
+     */
+    VisitDTO update(VisitDTO visitDTO);
+
+    /**
+     *
+     * @param id
+     * @throws VisitNotFoundException
+     */
+    void delete(Long id) throws VisitNotFoundException;
+
+    /**
+     *
      * @param id
      * @return
      * @throws VisitNotFoundException
