@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -139,6 +140,50 @@ public class VisitServiceImpl implements VisitService {
         List<Visit> visits = visitRepository.findByPetIdAndVetId(petId, vetId);
 
         return this.visitMapper.mapToDtoList(visits);
+    }
+
+    /**
+     *
+     * @param from
+     * @param to
+     * @return
+     */
+    @Override
+    public List<VisitDTO> findByDateBetween(LocalDate from, LocalDate to) {
+
+        List<Visit> visits = visitRepository.findByVisitDateBetween(from, to);
+
+        visits.forEach(visit -> log.info("" + visit));
+
+        return this.visitMapper.mapToDtoList(visits);
+    }
+
+    /**
+     *
+     * @param vetId
+     * @param from
+     * @param to
+     * @return
+     */
+    @Override
+    public List<VisitDTO> findByVetIdAndDateBetween(Integer vetId, LocalDate from, LocalDate to) {
+
+        List<Visit> visits = visitRepository.findByVetIdAndVisitDateBetween(vetId, from, to);
+
+        visits.forEach(visit -> log.info("" + visit));
+
+        return this.visitMapper.mapToDtoList(visits);
+    }
+
+    /**
+     *
+     * @param petId
+     * @return
+     */
+    @Override
+    public long countVisitsByPet(Integer petId) {
+
+        return visitRepository.countByPetId(petId);
     }
 
     /**

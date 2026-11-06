@@ -285,4 +285,71 @@ public class VisitControllerTest {
 				"Expected total cost " + TOTAL_COST + " but was " + totalCost);
 	}
 
+	/**
+	 * GET /visits?from=2024-01-01&to=2024-12-31 -> 2 visits (ids 5 and 6)
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void testFindByDateBetween() throws Exception {
+
+		final String FROM = "2024-01-01";
+		final String TO = "2024-12-31";
+		final int NRO_VISITS = 2;
+
+		this.mockMvc.perform(get("/visits")
+						.param("from", FROM)
+						.param("to", TO))
+				.andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+				.andExpect(jsonPath("$", hasSize(NRO_VISITS)))
+				.andExpect(jsonPath("$[*].id", containsInAnyOrder(5, 6)));
+	}
+
+	/**
+	 * GET /visits?vetId=3&from=2009-01-01&to=2009-12-31 -> only visit 3
+	 * (vet 3 also has visit 4 on 2008-09-04, which is outside the range)
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void testFindByVetIdAndDateBetween() throws Exception {
+
+		final int VET_ID = 3;   // Linda Douglas
+		final String FROM = "2009-01-01";
+		final String TO = "2009-12-31";
+		final int NRO_VISITS = 1;
+		final int VISIT_ID = 3;
+
+		this.mockMvc.perform(get("/visits")
+						.param("vetId", String.valueOf(VET_ID))
+						.param("from", FROM)
+						.param("to", TO))
+				.andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+				.andExpect(jsonPath("$", hasSize(NRO_VISITS)))
+				.andExpect(jsonPath("$[0].id", is(VISIT_ID)))
+				.andExpect(jsonPath("$[0].vetId", is(VET_ID)))
+				.andExpect(jsonPath("$[0].visitDate", is("2009-06-04")));
+	}
+
+	/**
+	 * GET /visits/pet/8/count -> 2 visits of Max (visits 2 and 3)
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void testCountVisitsByPet() throws Exception {
+
+		final int PET_ID = 8;   // Max
+		final long NRO_VISITS = 2;
+
+		this.mockMvc.perform(get("/visits/pet/" + PET_ID + "/count"))
+				.andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(content().string(String.valueOf(NRO_VISITS)));
+	}
+
 }

@@ -4,6 +4,7 @@ import com.tecsup.petclinic.dtos.VisitDTO;
 import com.tecsup.petclinic.exceptions.VisitNotFoundException;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -63,6 +64,30 @@ public interface VisitService {
      * @return
      */
     List<VisitDTO> findByPetIdAndVetId(Integer petId, Integer vetId);
+
+    /**
+     *
+     * @param from
+     * @param to
+     * @return
+     */
+    List<VisitDTO> findByDateBetween(LocalDate from, LocalDate to);
+
+    /**
+     *
+     * @param vetId
+     * @param from
+     * @param to
+     * @return
+     */
+    List<VisitDTO> findByVetIdAndDateBetween(Integer vetId, LocalDate from, LocalDate to);
+
+    /**
+     *
+     * @param petId
+     * @return
+     */
+    long countVisitsByPet(Integer petId);
 
     /**
      *

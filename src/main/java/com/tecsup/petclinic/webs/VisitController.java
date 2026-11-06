@@ -4,6 +4,7 @@ import com.tecsup.petclinic.dtos.VisitDTO;
 import com.tecsup.petclinic.exceptions.VisitNotFoundException;
 import com.tecsup.petclinic.services.VisitService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -34,20 +36,35 @@ public class VisitController {
 	}
 
 	/**
-	 * Get all visits, optionally filtered by petId and/or vetId
+	 * Get all visits, optionally filtered by:
+	 *  - petId and/or vetId
+	 *  - from + to (date range, both inclusive), alone or with vetId
 	 *
 	 * @param petId
 	 * @param vetId
-	 * @return
+	 * @param from
+	 * @param to
+	 * @return 400 Bad Request if only one of from / to is sent, or if the range is combined with petId
 	 */
 	@GetMapping(value = "/visits")
 	public ResponseEntity<List<VisitDTO>> findAllVisits(
 			@RequestParam(required = false) Integer petId,
-			@RequestParam(required = false) Integer vetId) {
+			@RequestParam(required = false) Integer vetId,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
 
 		List<VisitDTO> visitsTO;
 
-		if (petId != null && vetId != null)
+		boolean hasRange = from != null || to != null;
+
+		if (hasRange && (from == null || to == null || petId != null))
+			return ResponseEntity.badRequest().build();
+
+		if (hasRange && vetId != null)
+			visitsTO = visitService.findByVetIdAndDateBetween(vetId, from, to);
+		else if (hasRange)
+			visitsTO = visitService.findByDateBetween(from, to);
+		else if (petId != null && vetId != null)
 			visitsTO = visitService.findByPetIdAndVetId(petId, vetId);
 		else if (petId != null)
 			visitsTO = visitService.findByPetId(petId);
@@ -59,6 +76,20 @@ public class VisitController {
 		visitsTO.forEach(item -> log.info("VisitTO >>  {} ", item));
 
 		return ResponseEntity.ok(visitsTO);
+	}
+
+	/**
+	 * Number of visits of a pet
+	 *
+	 * @param id
+	 * @return
+	 */
+	@GetMapping(value = "/visits/pet/{id}/count")
+	ResponseEntity<Long> countVisitsByPet(@PathVariable Integer id) {
+
+		long count = visitService.countVisitsByPet(id);
+
+		return ResponseEntity.ok(count);
 	}
 
 	/**
