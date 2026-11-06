@@ -13,8 +13,14 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import java.math.BigDecimal;
+
+import static org.hamcrest.CoreMatchers.everyItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -215,6 +221,68 @@ public class VisitControllerTest {
 		// FIND -> must not exist anymore
 		mockMvc.perform(get("/visits/" + id))
 				.andExpect(status().isNotFound());
+	}
+
+	/**
+	 * GET /visits?petId=7 -> 2 visits of Samantha (visits 1 and 4)
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void testFindByPetId() throws Exception {
+
+		final int PET_ID = 7;   // Samantha
+		final int NRO_VISITS = 2;
+
+		this.mockMvc.perform(get("/visits").param("petId", String.valueOf(PET_ID)))
+				.andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+				.andExpect(jsonPath("$", hasSize(NRO_VISITS)))
+				.andExpect(jsonPath("$[*].petId", everyItem(is(PET_ID))))
+				.andExpect(jsonPath("$[*].id", containsInAnyOrder(1, 4)));
+	}
+
+	/**
+	 * GET /visits?vetId=2 -> visits of vet 2 (Helen Leary: visits 1 and 2)
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void testFindByVetId() throws Exception {
+
+		final int VET_ID = 2;   // Helen Leary
+		final int NRO_VISITS = 2;
+
+		this.mockMvc.perform(get("/visits").param("vetId", String.valueOf(VET_ID)))
+				.andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+				.andExpect(jsonPath("$", hasSize(NRO_VISITS)))
+				.andExpect(jsonPath("$[*].vetId", everyItem(is(VET_ID))))
+				.andExpect(jsonPath("$[*].id", containsInAnyOrder(1, 2)));
+	}
+
+	/**
+	 * GET /visits/pet/7/total-cost -> 45.00 + 275.00 = 320.00
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void testCalculateTotalCostByPet() throws Exception {
+
+		final int PET_ID = 7;   // Samantha
+		final BigDecimal TOTAL_COST = new BigDecimal("320.00");
+
+		String response = this.mockMvc.perform(get("/visits/pet/" + PET_ID + "/total-cost"))
+				.andDo(print())
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+		BigDecimal totalCost = new BigDecimal(response);
+
+		assertEquals(0, TOTAL_COST.compareTo(totalCost),
+				"Expected total cost " + TOTAL_COST + " but was " + totalCost);
 	}
 
 }

@@ -5,11 +5,13 @@ import com.tecsup.petclinic.entities.Visit;
 import com.tecsup.petclinic.exceptions.VisitNotFoundException;
 import com.tecsup.petclinic.mapper.VisitMapper;
 import com.tecsup.petclinic.repositories.PetRepository;
+import com.tecsup.petclinic.repositories.VetRepository;
 import com.tecsup.petclinic.repositories.VisitRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,11 +27,14 @@ public class VisitServiceImpl implements VisitService {
 
     VisitRepository visitRepository;
     PetRepository petRepository;
+    VetRepository vetRepository;
     VisitMapper visitMapper;
 
-    public VisitServiceImpl(VisitRepository visitRepository, PetRepository petRepository, VisitMapper visitMapper) {
+    public VisitServiceImpl(VisitRepository visitRepository, PetRepository petRepository,
+                            VetRepository vetRepository, VisitMapper visitMapper) {
         this.visitRepository = visitRepository;
         this.petRepository = petRepository;
+        this.vetRepository = vetRepository;
         this.visitMapper = visitMapper;
     }
 
@@ -94,6 +99,61 @@ public class VisitServiceImpl implements VisitService {
 
     /**
      *
+     * @param petId
+     * @return
+     */
+    @Override
+    public List<VisitDTO> findByPetId(Integer petId) {
+
+        List<Visit> visits = visitRepository.findByPetId(petId);
+
+        visits.forEach(visit -> log.info("" + visit));
+
+        return this.visitMapper.mapToDtoList(visits);
+    }
+
+    /**
+     *
+     * @param vetId
+     * @return
+     */
+    @Override
+    public List<VisitDTO> findByVetId(Integer vetId) {
+
+        List<Visit> visits = visitRepository.findByVetId(vetId);
+
+        visits.forEach(visit -> log.info("" + visit));
+
+        return this.visitMapper.mapToDtoList(visits);
+    }
+
+    /**
+     *
+     * @param petId
+     * @param vetId
+     * @return
+     */
+    @Override
+    public List<VisitDTO> findByPetIdAndVetId(Integer petId, Integer vetId) {
+
+        List<Visit> visits = visitRepository.findByPetIdAndVetId(petId, vetId);
+
+        return this.visitMapper.mapToDtoList(visits);
+    }
+
+    /**
+     *
+     * @param petId
+     * @return
+     */
+    @Override
+    public BigDecimal calculateTotalCostByPet(Integer petId) {
+
+        return visitRepository.sumCostByPetId(petId);
+    }
+
+    /**
+     *
      * @return
      */
     @Override
@@ -105,7 +165,7 @@ public class VisitServiceImpl implements VisitService {
     }
 
     /**
-     * Map DTO to entity and resolve the pet relation from petId
+     * Map DTO to entity and resolve the pet / vet relations from petId / vetId
      *
      * @param visitDTO
      * @return
@@ -116,6 +176,9 @@ public class VisitServiceImpl implements VisitService {
 
         if (visitDTO.getPetId() != null)
             visit.setPet(petRepository.getReferenceById(visitDTO.getPetId()));
+
+        if (visitDTO.getVetId() != null)
+            visit.setVet(vetRepository.getReferenceById(visitDTO.getVetId()));
 
         return visit;
     }

@@ -20,14 +20,16 @@ public interface VisitMapper {
 	VisitMapper INSTANCE = Mappers.getMapper(VisitMapper.class);
 
 	/**
-	 * The pet relation is resolved in the service from petId
+	 * The pet and vet relations are resolved in the service from petId / vetId
 	 */
 	@Mapping(source = "visitDate", target = "visitDate", dateFormat = "yyyy-MM-dd")
 	@Mapping(target = "pet", ignore = true)
+	@Mapping(target = "vet", ignore = true)
 	Visit mapToEntity(VisitDTO visitTO);
 
 	@Mapping(source = "visitDate", target = "visitDate", dateFormat = "yyyy-MM-dd")
 	@Mapping(source = "pet.id", target = "petId")
+	@Mapping(source = "vet.id", target = "vetId")
 	VisitDTO mapToDto(Visit visit);
 
 	List<VisitDTO> mapToDtoList(List<Visit> visitList);

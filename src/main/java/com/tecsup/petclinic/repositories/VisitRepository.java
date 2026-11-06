@@ -1,8 +1,11 @@
 package com.tecsup.petclinic.repositories;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.tecsup.petclinic.entities.Visit;
@@ -15,6 +18,19 @@ import com.tecsup.petclinic.entities.Visit;
 @Repository
 public interface VisitRepository
 	extends JpaRepository<Visit, Long> {
+
+	// Fetch visits by petId
+	List<Visit> findByPetId(Integer petId);
+
+	// Fetch visits by vetId
+	List<Visit> findByVetId(Integer vetId);
+
+	// Fetch visits by petId and vetId
+	List<Visit> findByPetIdAndVetId(Integer petId, Integer vetId);
+
+	// Sum of the cost of all visits of a pet (0 if it has none)
+	@Query("SELECT COALESCE(SUM(v.cost), 0) FROM visits v WHERE v.pet.id = :petId")
+	BigDecimal sumCostByPetId(@Param("petId") Integer petId);
 
 	@Override
 	List<Visit> findAll();

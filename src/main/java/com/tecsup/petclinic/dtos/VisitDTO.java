@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  *
  * DTO for Visit
@@ -22,6 +24,10 @@ public class VisitDTO {
 
 	private String description;
 
+	private BigDecimal cost;
+
 	private Integer petId;
+
+	private Integer vetId;
 
 }

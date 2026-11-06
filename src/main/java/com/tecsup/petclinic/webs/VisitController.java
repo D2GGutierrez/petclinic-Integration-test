@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -32,17 +34,45 @@ public class VisitController {
 	}
 
 	/**
-	 * Get all visits
+	 * Get all visits, optionally filtered by petId and/or vetId
 	 *
+	 * @param petId
+	 * @param vetId
 	 * @return
 	 */
 	@GetMapping(value = "/visits")
-	public ResponseEntity<List<VisitDTO>> findAllVisits() {
+	public ResponseEntity<List<VisitDTO>> findAllVisits(
+			@RequestParam(required = false) Integer petId,
+			@RequestParam(required = false) Integer vetId) {
 
-		List<VisitDTO> visitsTO = visitService.findAll();
+		List<VisitDTO> visitsTO;
+
+		if (petId != null && vetId != null)
+			visitsTO = visitService.findByPetIdAndVetId(petId, vetId);
+		else if (petId != null)
+			visitsTO = visitService.findByPetId(petId);
+		else if (vetId != null)
+			visitsTO = visitService.findByVetId(vetId);
+		else
+			visitsTO = visitService.findAll();
+
 		visitsTO.forEach(item -> log.info("VisitTO >>  {} ", item));
 
 		return ResponseEntity.ok(visitsTO);
+	}
+
+	/**
+	 * Total cost of all visits of a pet
+	 *
+	 * @param id
+	 * @return
+	 */
+	@GetMapping(value = "/visits/pet/{id}/total-cost")
+	ResponseEntity<BigDecimal> calculateTotalCostByPet(@PathVariable Integer id) {
+
+		BigDecimal totalCost = visitService.calculateTotalCostByPet(id);
+
+		return ResponseEntity.ok(totalCost);
 	}
 
 	/**
@@ -97,7 +127,9 @@ public class VisitController {
 
 			updateVisitDto.setVisitDate(visitTO.getVisitDate());
 			updateVisitDto.setDescription(visitTO.getDescription());
+			updateVisitDto.setCost(visitTO.getCost());
 			updateVisitDto.setPetId(visitTO.getPetId());
+			updateVisitDto.setVetId(visitTO.getVetId());
 
 			updateVisitDto = visitService.update(updateVisitDto);
 

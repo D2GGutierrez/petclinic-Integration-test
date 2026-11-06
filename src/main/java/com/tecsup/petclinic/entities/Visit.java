@@ -5,10 +5,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
- * 
+ *
  * @author jgomezm
  *
  */
@@ -27,8 +28,16 @@ public class Visit {
 	@Column(name = "description")
 	private String description;
 
+	@Column(name = "cost")
+	private BigDecimal cost;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "pet_id")
 	//@ToString.Exclude
 	private Pet pet;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "vet_id")
+	@ToString.Exclude
+	private Vet vet;
 }
