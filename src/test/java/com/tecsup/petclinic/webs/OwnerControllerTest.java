@@ -78,7 +78,8 @@ public class OwnerControllerTest {
         String CITY = "Lima";
         String TELEPHONE = "999888777";
 
-        OwnerDTO newOwnerTO = OwnerDTO.b
+        OwnerDTO newOwnerTO = OwnerDTO.builder()
+                .firstName(FIRST_NAME)
                 .lastName(LAST_NAME)
                 .address(ADDRESS)
                 .city(CITY)
